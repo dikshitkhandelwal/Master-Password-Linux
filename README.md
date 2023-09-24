@@ -20,6 +20,7 @@ authentication configuration. So, it is better to put in common-auth, so it will
 Now put the following configuration on the top. If you have the first auth as [nullok] then put it above it:
 
 auth sufficient pam_mymodule.so
+
 -------------------------
 Certainly. The PAM (Pluggable Authentication Modules) system in Linux uses a flexible and modular approach to authentication. Each authentication-related task can involve one or more modules, and the order and behavior of these modules are defined in configuration files (e.g., /etc/pam.d/common-auth).
 
