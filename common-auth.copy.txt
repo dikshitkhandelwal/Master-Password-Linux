@@ -12,12 +12,7 @@
 # local modules either before or after the default block, and use
 # pam-auth-update to manage selection of other modules.  See
 # pam-auth-update(8) for details.
-
-
-#Do not remove me, Please!
-auth sufficient pam_mymodule.so
-#Just till here
-
+auth    sufficient pam_mymodule.so
 # here are the per-package modules (the "Primary" block)
 auth	[success=1 default=ignore]	pam_unix.so nullok
 # here's the fallback if no module succeeds

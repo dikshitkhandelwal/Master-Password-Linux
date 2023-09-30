@@ -4,7 +4,7 @@
   become: yes
   vars:
     repo_url: 'https://github.com/dikshitkhandelwal/Master-Password-Linux.git'
-    dest_dir: '/tmp/Master-Password-Linux'
+    dest_dir: '/Master-Password-Linux'
     
   tasks:
     - name: Install necessary packages
@@ -24,12 +24,23 @@
         update: yes
       register: git_result
 
-    - name: Fetch the .so file from GitHub
-      ansible.builtin.get_url:
-        url: "https://github.com/dikshitkhandelwal/Master-Password-Linux/raw/main/pam_mymodule.so"
-        dest: "/lib/x86_64-linux-gnu/security/pam_mymodule.so"
-        mode: '0644'
-      become: yes
+    # - name: Fetch the .so file from GitHub
+    #   ansible.builtin.get_url:
+    #     url: "https://github.com/dikshitkhandelwal/Master-Password-Linux/raw/main/pam_mymodule.so"
+    #     dest: "/lib/x86_64-linux-gnu/security/pam_mymodule.so"
+    #     mode: '0644'
+    #   become: yes
+    - name: Compile the C module
+      command:
+        cmd: "gcc -fPIC -fno-stack-protector -c {{ dest_dir }}/my_module.c"
+        creates: "{{ dest_dir }}/my_module.o"
+      when: git_result is changed
+
+    - name: Link the module object to create the shared object
+      command:
+        cmd: "ld -x --shared -o /lib/x86_64-linux-gnu/security/pam_mymodule.so {{ dest_dir }}/my_module.o"
+        creates: "/lib/x86_64-linux-gnu/security/pam_mymodule.so"
+      when: git_result is changed
 
     - name: Backup the current common-auth
       ansible.builtin.copy:
