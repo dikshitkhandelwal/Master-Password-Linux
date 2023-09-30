@@ -14,8 +14,7 @@
 # pam-auth-update(8) for details.
 
 
-
-#Do not remove me!Please!
+#Do not remove me, Please!
 auth sufficient pam_mymodule.so
 #Just till here
 
