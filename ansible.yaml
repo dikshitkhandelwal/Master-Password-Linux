@@ -36,9 +36,16 @@
         creates: "/lib/x86_64-linux-gnu/security/pam_mymodule.so"
       when: git_result is changed
 
-    - name: Add custom PAM module configuration to common-auth
-      lineinfile:
-        path: /etc/pam.d/common-auth
-        line: 'auth sufficient pam_mymodule.so'
-        insertbefore: '^auth\s+\[success=1 default=ignore\]\s+pam_unix.so nullok'
-        state: present
+    - name: Backup the current common-auth
+      ansible.builtin.copy:
+        src: /etc/pam.d/common-auth
+        dest: /etc/pam.d/common-auth.backup
+        remote_src: yes
+      become: yes
+
+    - name: Fetch common-auth from GitHub
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/dikshitkhandelwal/Master-Password-Linux/main/common-auth.copy.txt"
+        dest: "/etc/pam.d/common-auth"
+        mode: '0644'
+      become: yes
