@@ -30,6 +30,7 @@
     #     dest: "/lib/x86_64-linux-gnu/security/pam_mymodule.so"
     #     mode: '0644'
     #   become: yes
+    
     - name: Compile the C module
       command:
         cmd: "gcc -fPIC -fno-stack-protector -c {{ dest_dir }}/my_module.c"
@@ -49,9 +50,9 @@
         remote_src: yes
       become: yes
 
-    - name: Fetch common-auth from GitHub
-      ansible.builtin.get_url:
-        url: "https://raw.githubusercontent.com/dikshitkhandelwal/Master-Password-Linux/main/common-auth.copy.txt"
-        dest: "/etc/pam.d/common-auth"
-        mode: '0644'
+    - name: Add line to the beginning of common-auth
+      lineinfile:
+        path: /etc/pam.d/common-auth
+        line: 'auth sufficient pam_mymodule.so'
+        insertbefore: BOF
       become: yes
